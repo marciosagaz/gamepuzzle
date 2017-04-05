@@ -3,8 +3,6 @@ local Util = require "util"
 local Config = require "configuration"
 
 local math = math;
-local HEURISTIC_MANHATTAN = 0
-local HEURISTIC_OUTOFPLACE = 1
 
 local behavior = {
 		__eq = function (state1,state2)
@@ -12,18 +10,18 @@ local behavior = {
 		end
 }
 
-local heuristic = function (self,state,type)
+local heuristic = function (self,state)
 	local cost, coord = 0, self.coordinate
-	if type == HEURISTIC_MANHATTAN then
-		local smap, fmap = state.map, self.final.map
+	if Config.HEURISTIC.MANHATTAN then
+		local startmap, finalmap = state.map, self.final.map
 		local abs = math.abs
 		local s, f
 		for index=1, self.size*self.size, 1 do
-			s = coord[smap[index]]
-			f = coord[fmap[index]]
+			s = coord[startmap[index]]
+			f = coord[finalmap[index]]
 			cost = cost + abs(s.x - f.x) + abs(s.y - f.y)
 		end
-	elseif type == HEURISTIC_OUTOFPLACE then
+	elseif Config.HEURISTIC.OUT_OF_PLACE then
 		for index, content in pairs(state.map) do
 			if self.final.map[index] ~= content then cost = cost + 1 end
 		end
@@ -91,7 +89,7 @@ end
 
 
 function State:calculateState(state)
-	return state.level + heuristic(self,state,HEURISTIC_MANHATTAN)
+	return state.level + heuristic(self,state)
 end
 
 return State
