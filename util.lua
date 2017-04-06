@@ -41,16 +41,8 @@ function Util.getRoutesOfCartesianPlane(size, coordinate)
   return routes
 end
 
-function Util.copy(tab)
-  local map = {}
-  for index, content in pairs(tab) do
-    map[index]=content
-  end
-  return map
-end
-
 function Util.findContent(tab,content)
-  for index, item in pairs(tab) do
+  for index, item in ipairs(tab) do
     if item == content then
       return index;
     end

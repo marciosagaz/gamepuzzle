@@ -68,9 +68,10 @@ function State:findStates(state, filter)
 	local oldPositionOfEmptySpace = Util.findContent(state.map,self.emptySpace)
 	local routes = self.routes[oldPositionOfEmptySpace]
 	local states = {}
+	local unpack = table.unpack or unpack
 	for _, newPositionOfEmptySpace in ipairs(routes) do
 		local newState = Util.createBehavior({
-			map=Util.copy(state.map),
+			map={unpack(state.map)},
 			level=(state.level+1),
 			id=0,
 			match={}
