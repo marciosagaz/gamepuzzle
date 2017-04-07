@@ -1,6 +1,7 @@
 ---@module List
 local Util = require "util"
 local Config = require "configuration"
+local View = require "puzzle_view"
 
 local math = math;
 
@@ -33,8 +34,8 @@ local State = {}
 
 function State:new()
 	local instance = {}
-	local initialId = table.concat(Config.INITIAL)
-	local finalId = table.concat(Config.FINAL)
+	local initialId = table.concat(Config.INITIAL,',')
+	local finalId = table.concat(Config.FINAL,',')
 	self.__index = State
 	setmetatable(instance, self)
 	instance.initial = Util.createBehavior({
@@ -53,6 +54,7 @@ function State:new()
 	instance.coordinate = Util.getCartesianPlane(Config.SIZE)
 	instance.routes = Util.getRoutesOfCartesianPlane(Config.SIZE,instance.coordinate)
 	instance.emptySpace = Config.SIZE*Config.SIZE
+	instance.view = View:new(Config.SIZE)
 	return instance
 end
 
@@ -78,8 +80,8 @@ function State:findStates(state, filter)
 		},behavior)
 		newState.map[newPositionOfEmptySpace] = state.map[oldPositionOfEmptySpace]
 		newState.map[oldPositionOfEmptySpace] = state.map[newPositionOfEmptySpace]
-		if not filter[table.concat(newState.map)] then
-			newState.id = table.concat(newState.map)
+		if not filter[table.concat(newState.map,',')] then
+			newState.id = table.concat(newState.map,',')
 			newState.match[newState.id]=true
 			states[#states+1] = newState
 			filter[newState.id] = {parentId=state.id}
@@ -91,6 +93,8 @@ end
 
 function State:calculateState(state)
 	return state.level + heuristic(self,state)
+	-- return heuristic(self,state)
+	-- return state.level/self.size + heuristic(self,state)
 end
 
 return State

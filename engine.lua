@@ -1,14 +1,15 @@
 local Buffer = require "buffer"
-local Manager = (require "puzzle"):new()
+local Control = (require "puzzle"):new()
+local View = Control.view
 
 local function createNodeInitial()
-  local state=Manager:getInitial()
-  return { state=state, cost=Manager:calculateState(state) }
+  local state=Control:getInitial()
+  return { state=state, cost=Control:calculateState(state) }
 end
 
 local function createNodeFinal()
-  local state=Manager:getFinal()
-  return { state=state, cost=Manager:calculateState(state) }
+  local state=Control:getFinal()
+  return { state=state, cost=Control:calculateState(state) }
 end
 
 local function rule(first,second)
@@ -16,15 +17,15 @@ local function rule(first,second)
 end
 
 local function expandFrontier(frontier, node, visited)
-  local states = Buffer:new(Manager:findStates(node.state, visited))
+  local states = Buffer:new(Control:findStates(node.state, visited))
   if states:isEmpty() then return end
   repeat
     local state = states:remove()
-    frontier:insertByRule({ state=state, cost=Manager:calculateState(state) }, rule)
+    frontier:insertByRule({ state=state, cost=Control:calculateState(state) }, rule)
   until states:isEmpty()
 end
 
-local function run(log)
+local function run()
   local seed = createNodeInitial()
   local frontier = Buffer:new():insert(seed)
   local target = createNodeFinal()
@@ -32,7 +33,7 @@ local function run(log)
   local node, count
   count = 0
   while(true) do
-    if count == 181441 then return "181441" end
+    -- if count == 181441 then return "181441" end
     if frontier:isEmpty() then
      local ret = {
         success=false,
@@ -41,9 +42,10 @@ local function run(log)
       return ret
     end
     node = frontier:remove()
-    log(node.state.id, node.cost, node.state.level, count, #frontier.list);
+    View.log(node.state.id, node.cost, node.state.level, count, #frontier.list);
     if node.state == target.state then
       local ret = {
+        view = View,
         success=true,
         msg="Sucesso em buscar a resposta! " .. count,
         node=node,
