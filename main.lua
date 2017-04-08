@@ -22,7 +22,7 @@ if result.success then
 end
 
 for move, content in ipairs(steps) do
-  print('move',move)
+  print('move',move-1)
   result.view:draw(content)
   print("Enter to next move.")
   io.read()

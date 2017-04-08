@@ -80,8 +80,9 @@ function State:findStates(state, filter)
 		},behavior)
 		newState.map[newPositionOfEmptySpace] = state.map[oldPositionOfEmptySpace]
 		newState.map[oldPositionOfEmptySpace] = state.map[newPositionOfEmptySpace]
-		if not filter[table.concat(newState.map,',')] then
-			newState.id = table.concat(newState.map,',')
+		local id = table.concat(newState.map,',')
+		if not filter[id] then
+			newState.id = id
 			newState.match[newState.id]=true
 			states[#states+1] = newState
 			filter[newState.id] = {parentId=state.id}
@@ -93,8 +94,6 @@ end
 
 function State:calculateState(state)
 	return state.level + heuristic(self,state)
-	-- return heuristic(self,state)
-	-- return state.level/self.size + heuristic(self,state)
 end
 
 return State
