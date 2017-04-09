@@ -31,27 +31,29 @@ local function run()
   local target = createNodeFinal()
   local visited = {[seed.state.id]={}}
   local node, count
-  count = 0
+  local timestart = os.time()
+  count = 1
   while(true) do
     -- if count == 181441 then return "181441" end
     if frontier:isEmpty() then
-     local ret = {
+     View:show({
         success=false,
         msg="Falhou em buscar a resposta!"
-      }
-      return ret
+      })
+      return
     end
     node = frontier:remove()
     View.log(node.state.id, node.cost, node.state.level, count, #frontier.list);
     if node.state == target.state then
-      local ret = {
-        view = View,
+      View:show({
         success=true,
-        msg="Sucesso em buscar a resposta! " .. count,
+        msg="Sucesso em buscar a resposta! ",
         node=node,
-        steps=visited
-      }
-      return ret
+        steps=visited,
+        frontier=count+#frontier.list,
+        time='time: ' .. os.time()-timestart
+      })
+      return
     end
     expandFrontier(frontier,node,visited)
     count = count + 1
