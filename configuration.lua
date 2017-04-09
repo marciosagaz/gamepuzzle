@@ -4,6 +4,10 @@ local configuration = {
     OUT_OF_PLACE = false,
   },
 
+  SIZE=2,
+  INITIAL={ 2, 3, 4, 1},
+  FINAL={1, 2, 3, 4},
+
   -- SIZE=3,
   -- INITIAL={ 2, 8, 3, 1, 6, 4, 7, 9, 5 },
   -- FINAL={1, 2, 3, 8, 9, 4, 7, 6, 5 },
@@ -30,9 +34,9 @@ local configuration = {
 
   -- piores caso
   -- INITIAL={ 6, 4, 7, 8, 5, 9, 3, 2, 1 },
-  SIZE=3,
-  INITIAL={ 8, 6, 7, 2, 5, 4, 3, 9, 1 },
-  FINAL={1, 2, 3, 4, 5, 6, 7, 8, 9 },
+  -- SIZE=3,
+  -- INITIAL={ 8, 6, 7, 2, 5, 4, 3, 9, 1 },
+  -- FINAL={1, 2, 3, 4, 5, 6, 7, 8, 9 },
 
   -- SIZE=4,
   -- INITIAL={1, 2, 3, 4, 5, 6, 7, 8, 9, 10,11,12,13,14,16,15 },
