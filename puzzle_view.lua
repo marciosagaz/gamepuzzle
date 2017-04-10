@@ -38,6 +38,7 @@ function Screen:show(result)
 
   print(result.time)
   print(result.msg .. #steps - 1 .. ' passos')
+  print("Na fronteira durante a execução! " .. result.frontier .. ' Nodos')
   for move, content in ipairs(steps) do
     print('move',move-1)
     self:draw(content)
