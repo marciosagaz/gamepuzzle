@@ -1,9 +1,19 @@
 ---@module List
+
+-----------------------
+--[ import modules ]
+-----------------------
+
 local Util = require "util"
 local Config = require "configuration"
+local Buffer = require "buffer"
 local View = require "puzzle_view"
-
 local math = math;
+local State = {}
+
+-----------------------
+--[ private functions ]
+-----------------------
 
 local behavior = {
 		__eq = function (state1,state2)
@@ -11,7 +21,11 @@ local behavior = {
 		end
 }
 
-local heuristic = function (self,state)
+local function rule(first,second)
+  return first.cost < second.cost
+end
+
+local function heuristic(self,state)
 	local cost, coord = 0, self.coordinate
 	if Config.HEURISTIC.MANHATTAN then
 		local startmap, finalmap = state.map, self.final.map
@@ -30,7 +44,24 @@ local heuristic = function (self,state)
 	return cost
 end
 
-local State = {}
+local function calculateState(self,state)
+	return state.level + heuristic(self,state)
+end
+
+local function createNewState(state, id, match)
+	local unpack = table.unpack or unpack
+	return Util.createBehavior({
+			map={unpack(state.map)},
+			level=(state.level+1),
+			id= id or 0,
+			match= match or {}
+		},behavior)
+end
+
+
+-----------------------
+--[ public functions ]
+-----------------------
 
 function State:new()
 	local instance = {}
@@ -38,62 +69,72 @@ function State:new()
 	local finalId = table.concat(Config.FINAL,',')
 	self.__index = State
 	setmetatable(instance, self)
-	instance.initial = Util.createBehavior({
-		map=Config.INITIAL,
-		level=0,
-		id=initialId,
-		match={[initialId]=true},
-	},behavior)
-	instance.final = Util.createBehavior({
-		map=Config.FINAL,
-		level=0,
-		id=finalId,
-		match={[finalId]=true}
-	},behavior)
+	instance.initial = createNewState({map=Config.INITIAL, level=-1}, initialId, {[initialId]=true})
+	instance.final = createNewState({map=Config.FINAL, level=-1}, finalId, {[finalId]=true})
 	instance.size = Config.SIZE
 	instance.coordinate = Util.getCartesianPlane(Config.SIZE)
 	instance.routes = Util.getRoutesOfCartesianPlane(Config.SIZE,instance.coordinate)
 	instance.emptySpace = Config.SIZE*Config.SIZE
 	instance.view = View:new(Config.SIZE)
+	instance.visited = {}
+	instance.frontier = Buffer:new()
 	return instance
 end
 
-function State:getInitial()
-	return self.initial
+function State:start()
+	self.timestart = os.time()
+	local seed = { state=self.initial, cost=calculateState(self,self.initial) }
+	self.frontier:insert(seed)
+  self.visited[seed.state.id] = {}
+	self.target = { state=self.final, cost=calculateState(self,self.final) }
 end
 
-function State:getFinal()
-	return self.final
+function State:getFrontier()
+  return self.frontier
 end
 
-function State:findStates(state, filter)
+function State:expandFrontier(node)
+  local state = node.state;
 	local oldPositionOfEmptySpace = Util.findContent(state.map,self.emptySpace)
 	local routes = self.routes[oldPositionOfEmptySpace]
-	local states = {}
-	local unpack = table.unpack or unpack
 	for _, newPositionOfEmptySpace in ipairs(routes) do
-		local newState = Util.createBehavior({
-			map={unpack(state.map)},
-			level=(state.level+1),
-			id=0,
-			match={}
-		},behavior)
+	  local newState = createNewState(state)
 		newState.map[newPositionOfEmptySpace] = state.map[oldPositionOfEmptySpace]
 		newState.map[oldPositionOfEmptySpace] = state.map[newPositionOfEmptySpace]
 		local id = table.concat(newState.map,',')
-		if not filter[id] then
+		if not self.visited[id] then
 			newState.id = id
 			newState.match[newState.id]=true
-			states[#states+1] = newState
-			filter[newState.id] = {parentId=state.id}
+			self.visited[newState.id] = {parentId=state.id}
+			self.frontier:insertByRule({ state=newState, cost=calculateState(self,newState) }, rule)
 		end
 	end
-	return states
 end
 
+function State:register(node, position)
+	self.view.log(node.state.id, node.cost, node.state.level, position, #self.frontier.list)
+end
 
-function State:calculateState(state)
-	return state.level + heuristic(self,state)
+function State:isTarget(node)
+	return node.state == self.target.state
+end
+
+function State:setTargetSuccess(node,position)
+	self.view:show({
+		success=true,
+		msg="Sucesso em buscar a resposta! ",
+		node=node,
+		steps=self.visited,
+		frontier=position+#self.frontier.list,
+		time='time: ' .. os.time()-self.timestart
+	})
+end
+
+function State:setTargetFail()
+  self.view:show({
+		success=false,
+		msg="Falhou em buscar a resposta! Fronteira está vazia!"
+  })
 end
 
 return State

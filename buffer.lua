@@ -36,13 +36,13 @@ function Buffer:isEmpty()
 	return #self.list == 0
 end
 
-function Buffer:getItem()
-	return self.list[1]
-end
+-- function Buffer:getItem()
+-- 	return self.list[1]
+-- end
 
-function Buffer:sort(regra)
-	table.sort(self.list,regra)
-	return self
-end
+-- function Buffer:sort(regra)
+-- 	table.sort(self.list,regra)
+-- 	return self
+-- end
 
 return Buffer

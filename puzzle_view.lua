@@ -34,6 +34,9 @@ function Screen:show(result)
       table.insert(steps,1,parentId)
       parentId = result.steps[parentId].parentId
     until not parentId
+  else
+    print(result.msg)
+    return
   end
 
   print(result.time)
@@ -46,6 +49,7 @@ function Screen:show(result)
     io.read()
   end
 end
+
 function Screen.log(map, cost, level, visited, novisited)
   print( 'map', map, 'cost', cost, 'level', level, 'visited', visited, 'novisited', novisited)
 end
