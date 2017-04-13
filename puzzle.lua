@@ -22,7 +22,9 @@ local behavior = {
 }
 
 local function rule(first,second)
-  return first.cost < second.cost
+  return first.cost == second.cost
+		and first.state.level < second.state.level
+		or first.cost < second.cost
 end
 
 local function heuristic(self,state)
@@ -85,7 +87,7 @@ function State:start()
 	self.timestart = os.time()
 	local seed = { state=self.initial, cost=calculateState(self,self.initial) }
 	self.frontier:insert(seed)
-  self.visited[seed.state.id] = {}
+  self.visited[seed.state.id] = {level=0}
 	self.target = { state=self.final, cost=calculateState(self,self.final) }
 end
 
@@ -105,7 +107,12 @@ function State:expandFrontier(node)
 		if not self.visited[id] then
 			newState.id = id
 			newState.match[newState.id]=true
-			self.visited[newState.id] = {parentId=state.id}
+			self.visited[newState.id] = {parentId=state.id, level=newState.level}
+			self.frontier:insertByRule({ state=newState, cost=calculateState(self,newState) }, rule)
+		elseif self.visited[id].level > newState.level then
+			newState.id = id
+			newState.match[newState.id]=true
+			self.visited[newState.id] = {parentId=state.id, level=newState.level}
 			self.frontier:insertByRule({ state=newState, cost=calculateState(self,newState) }, rule)
 		end
 	end
