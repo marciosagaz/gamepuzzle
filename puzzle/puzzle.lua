@@ -6,8 +6,9 @@
 
 local Util = require "util"
 local Config = require "configuration"
-local Buffer = require "buffer"
+local Buffer = require "buffer_puzzle"
 local View = require "puzzle_view"
+local engine = require "engine"
 local math = math;
 local State = {}
 
@@ -83,7 +84,11 @@ function State:new()
 	return instance
 end
 
-function State:start()
+function State.start()
+	engine.start(State:new())
+end
+
+function State:setup()
 	self.timestart = os.time()
 	local seed = { state=self.initial, cost=calculateState(self,self.initial) }
 	self.frontier:insert(seed)

@@ -1,18 +1,17 @@
 
-local Control = (require "puzzle"):new()
-
-local function run()
-  Control:start()
+local function run(control)
+  control:setup()
   while(true) do
-    if Control:isFinal() then
-      return Control:setToFinal()
+    if control:isFinal() then
+      return control:setToFinal()
     end
-    Control:next()
-    Control:register();
-    if Control:isTarget() then
-      return Control:setToTarget()
+    control:next()
+    control:register();
+    if control:isTarget() then
+      return control:setToTarget()
     end
-    Control:expandFrontier()
+    control:expandFrontier()
   end
 end
+
 return { start=run }
