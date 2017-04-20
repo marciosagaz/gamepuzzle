@@ -89,14 +89,19 @@ function State:start()
 	self.frontier:insert(seed)
   self.visited[seed.state.id] = {level=0}
 	self.target = { state=self.final, cost=calculateState(self,self.final) }
+	self.counter = 1
 end
 
-function State:getFrontier()
-  return self.frontier
+function State:isFinal()
+		return self.frontier:isEmpty()
 end
 
-function State:expandFrontier(node)
-  local state = node.state;
+function State:next()
+		self.node = self.frontier:remove()
+end
+
+function State:expandFrontier()
+  local state = self.node.state;
 	local oldPositionOfEmptySpace = Util.findContent(state.map,self.emptySpace)
 	local routes = self.routes[oldPositionOfEmptySpace]
 	for _, newPositionOfEmptySpace in ipairs(routes) do
@@ -116,28 +121,30 @@ function State:expandFrontier(node)
 			self.frontier:insertByRule({ state=newState, cost=calculateState(self,newState) }, rule)
 		end
 	end
+	self.counter = self.counter + 1
 end
 
-function State:register(node, position)
-	self.view.log(node.state.id, node.cost, node.state.level, position, #self.frontier.list)
+function State:register()
+	local node = self.node
+	self.view.log(node.state.id, node.cost, node.state.level, self.counter, #self.frontier.list)
 end
 
-function State:isTarget(node)
-	return node.state == self.target.state
+function State:isTarget()
+	return self.node.state == self.target.state
 end
 
-function State:setTargetSuccess(node,position)
+function State:setToTarget()
 	self.view:show({
 		success=true,
 		msg="Sucesso em buscar a resposta! ",
-		node=node,
+		node=self.node,
 		steps=self.visited,
-		frontier=position+#self.frontier.list,
+		frontier=self.counter+#self.frontier.list,
 		time='time: ' .. os.time()-self.timestart
 	})
 end
 
-function State:setTargetFail()
+function State:setToFinal()
   self.view:show({
 		success=false,
 		msg="Falhou em buscar a resposta! Fronteira está vazia!"
