@@ -4,11 +4,11 @@
 --[ import modules ]
 -----------------------
 
-local Util = require "util"
+local Util = require "common.util"
 local Config = require "configuration"
-local Buffer = require "buffer_puzzle"
-local View = require "puzzle_view"
-local engine = require "engine"
+local Buffer = require "puzzle.buffer_puzzle"
+local View = require "puzzle.puzzle_view"
+local engine = require "engine_search"
 local math = math;
 local State = {}
 
