@@ -9,7 +9,7 @@ function Screen:new(size)
   instance.size = size
   bus.draw = function () instance:doit() end
   bus.mouse = function (i) instance:iterate(i) end
-  self.tab = ""
+  self.output = {text=""}
   return instance
 end
 
@@ -27,10 +27,8 @@ function Screen:draw(map)
   end
   local layout = table.concat(output)
   local repValue = (layout:len() / size) - 1
-  -- print(("_"):rep(repValue) .. '\n' .. string.gsub(layout,
-  --   tostring(dsize),big and '  ' or ' ') .. ("¨"):rep(repValue))
-  self.tab = (("_"):rep(repValue) .. '\n' .. string.gsub(layout,
-    tostring(dsize),big and 'XX' or 'X') .. ("¨"):rep(repValue))
+  self.output.text = (("_"):rep(repValue) .. '\n' .. string.gsub(layout,
+    tostring(dsize),big and '    ' or '  ') .. ("¨"):rep(repValue))
 end
 
 function Screen:show(result)
@@ -49,12 +47,6 @@ function Screen:show(result)
   print(result.time)
   print(result.msg .. #steps - 1 .. ' passos')
   print("Na fronteira durante a execução! " .. result.frontier .. ' Nodos')
-  -- for move, content in ipairs(steps) do
-    -- print('move',move-1)
-    -- self:draw(content)
-    -- print("Enter to next move.")
-    -- io.read()
-  -- end
   self.steps = steps
   self.func = ipairs(steps)
   self:iterate(0)
@@ -65,20 +57,20 @@ function Screen.log(map, cost, level, visited, novisited)
 end
 
 function Screen:iterate(i)
-  print('Screen:iterate(i)')
-  love.graphics.setColor(0, 255, 0, 255)
   local move, content = self.func(self.steps,i)
-    love.graphics.print(move,5,10)
+    self.output.move = move
     self:draw(content)
-    love.graphics.print("Enter to next move.",50,10)
-    -- io.read()
-    bus.move = move
+    self.output.msg = "Enter to next move."
+    bus.move = (move < #self.steps and move) or move-1
     return move
 end
 
 function Screen:doit()
-  love.graphics.setColor(0, 255, 0, 255)
-  love.graphics.print(self.tab,10,10)
+  local gp = love.graphics
+  gp.setColor(0, 255, 0, 255)
+  gp.print("Move = " .. (self.output.move - 1),10,10)
+  gp.print(self.output.text,10,25)
+  gp.print(self.output.msg,10,25)
 end
 
 return Screen
